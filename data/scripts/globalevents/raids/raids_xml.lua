@@ -43,8 +43,8 @@ local function parseAreaSpawn(node, filename)
 			io.write("[Error] Missing one of: centerx, centery, centerz, check data/raids/" .. filename .. "\n")
 		end
 
-		fromx, fromy, fromz = centerx - radius, centery - radius, z
-		tox, toy, toz = centerx + radius, centery + radius, z
+                fromx, fromy, fromz = centerx - radius, centery - radius, centerz
+                tox, toy, toz = centerx + radius, centery + radius, centerz
 	else
 		fromx, fromy, fromz = tonumber(node:attribute("fromx")), tonumber(node:attribute("fromy")), tonumber(node:attribute("fromz"))
 		if not fromx or not fromy or not fromz then
@@ -81,28 +81,29 @@ local function parseAreaSpawn(node, filename)
 			maxAmount = minAmount
 		end
 
-		spawns[#spawns] = { monsterName = name, minAmount = minAmount, maxAmount = maxAmount }
+                spawns[#spawns + 1] = { monsterName = name, minAmount = minAmount, maxAmount = maxAmount }
 	end
 
 	return function()
 		for _, spawn in ipairs(spawns) do
 			for _ = 1, math.random(spawn.minAmount, spawn.maxAmount) do
-				local x, y = math.random(fromx, tox), math.random(fromy, toy)
-				Game.createMonster(spawns.name, Position(x, y, z))
+                                local x, y = math.random(fromx, tox), math.random(fromy, toy)
+                                local positionZ = math.random(fromz, toz)
+                                Game.createMonster(spawn.monsterName, Position(x, y, positionZ))
 			end
 		end
 	end
 end
 
-local function parseScript(node)
-	local script = node:attribute("script")
-	if not script then
-		io.write("[Error] Missing attribute script, check data/raids/" .. filename .. "\n")
-		return nil
-	end
+local function parseScript(node, filename)
+        local script = node:attribute("script")
+        if not script then
+                io.write("[Error] Missing attribute script, check data/raids/" .. filename .. "\n")
+                return nil
+        end
 
-	local scriptFile = "data/raids/scripts/" .. script
-	dofile(script)
+        local scriptFile = "data/raids/scripts/" .. script
+        dofile(scriptFile)
 	if not onRaid then
 		io.write("[Error] Can not load raid script, check " .. scriptFile .. " for a missing onRaid callback\n")
 		return nil
@@ -128,9 +129,9 @@ local function parseSingleSpawn(node, filename)
 		io.write("[Error] Missing one of: x, y, z, check data/raids/" .. filename .. "\n")
 	end
 
-	return function()
-		Game.createMonster(spawns.name, Position(x, y, z))
-	end
+        return function()
+                Game.createMonster(name, Position(x, y, z))
+        end
 end
 
 local eventParsers = {
@@ -163,7 +164,7 @@ local function parseRaid(filename)
 			return nil
 		end
 
-		events[#events] = { delay = delay, callback = callback }
+                events[#events + 1] = { delay = delay, callback = callback }
 	end
 
 	return events
