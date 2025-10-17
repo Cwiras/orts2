@@ -1,7 +1,16 @@
 local boolTrue = {"1", "y", "Y", "t", "T"}
 
 function tobool(str)
-	return str and table.contains(boolTrue, str[0])
+        if str == nil then
+                return false
+        end
+
+        local firstChar = tostring(str):sub(1, 1)
+        if firstChar == nil or firstChar == "" then
+                return false
+        end
+
+        return table.contains(boolTrue, firstChar)
 end
 
 function XMLNode.children(self)
